@@ -1,0 +1,106 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sign Language Interpreter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    #camera-feed {
+      width: 50%;
+      border: 2px solid #333;
+    }
+    #info-box {
+      margin-left: 20px;
+      flex-grow: 1;
+    }
+    .label {
+      font-size: 1.5rem;
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 1rem;
+      margin-top: 15px;
+      margin-right: 10px;
+    }
+    .instructions {
+      margin-top: 30px;
+      font-size: 1rem;
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div id="camera-feed">
+    <img src="/video_feed" width="100%" />
+  </div>
+  <div id="info-box">
+    <div class="label">Predicted Letter: <span id="prediction">Waiting...</span></div>
+    <div class="label">Current Word: <span id="currentWord">----</span></div>
+    <div class="label">Suggested Sentence: <span id="suggestion">----</span></div>
+    <div class="label">Predicted Letter: <span id="prediction">Confidence</span> (<span id="confidence">--</span>%)</div>
+
+    <button onclick="clearWord()">Clear Suggestion</button>
+
+    <div class="instructions">
+      <strong>Keyboard Shortcuts:</strong><br />
+      <b>X</b> - Speak the <u>suggested sentence</u><br />
+      <b>Z</b> - Skip current suggestion (no repetition)<br />
+      <b>C</b> - Speak the <u>current word</u><br />
+      <b>Space</b> - Add space for sentence formation<br />
+    </div>
+  </div>
+
+  <script>
+    async function fetchPrediction() {
+      try {
+        const res = await fetch('/get_prediction');
+        const data = await res.json();
+        document.getElementById('prediction').innerText = data.prediction;
+        document.getElementById('currentWord').innerText = data.word;
+        document.getElementById('suggestion').innerText = data.suggestion;
+        document.getElementById('prediction').innerText = data.prediction;
+        document.getElementById('confidence').innerText = Math.round(data.confidence * 100);
+
+      } catch (err) {
+        console.error('Error fetching prediction:', err);
+      }
+    }
+
+    function clearWord() {
+      fetch('/clear', { method: 'POST' });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+      if (['x', 'z', 'c', 'v', ' '].includes(key)) {
+        fetch(`/key_input/${key}`, { method: 'POST' });
+        // Also speak manually here for 'x' or 'c'
+        const text = key === 'x'
+          ? document.getElementById('suggestion').innerText
+          : key === 'c'
+          ? document.getElementById('currentWord').innerText
+          : null;
+
+        if (text) {
+          const speech = new SpeechSynthesisUtterance(text);
+          window.speechSynthesis.cancel(); // Stop any ongoing speech
+          window.speechSynthesis.speak(speech);
+        }
+      }
+    });
+
+    setInterval(fetchPrediction, 1000);
+  </script>
+</body>
+</html>
