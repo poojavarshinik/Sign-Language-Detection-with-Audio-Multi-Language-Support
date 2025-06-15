@@ -40,8 +40,8 @@ This project is a real-time sign language recognition system that uses a webcam 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/sign-language-multilang-assistant.git
-cd sign-language-multilang-assistant
+git clone https://github.com/poojavarshinik/Sign-Language-Detection-with-Audio-Multi-Language-Support.git
+cd Sign-Language-Detection-with-Audio-Multi-Language-Support
 ```
 
 ### 2. Install Dependencies
